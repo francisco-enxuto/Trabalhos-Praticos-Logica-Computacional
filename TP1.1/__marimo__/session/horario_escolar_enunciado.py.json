@@ -1,0 +1,87 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.24.2",
+    "script_metadata_hash": "00441117d6719522e397cdcec4393ea1"
+  },
+  "cells": [
+    {
+      "id": "Hbol",
+      "code_hash": "1d0db38904205bec4d6f6f6a1f6cec3e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MJUe",
+      "code_hash": "fceef8e8531b9c173a80f0b759b8594d",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"trabalho-pratico-gerador-de-horario-escolar\">Trabalho Pr\u00e1tico: Gerador de Hor\u00e1rio Escolar</h1>\n<h2 id=\"contexto\">Contexto</h2>\n<span class=\"paragraph\">Uma escola precisa de gerar automaticamente o hor\u00e1rio semanal de um\nconjunto de turmas, respeitando a carga letiva de cada disciplina, a\ndisponibilidade dos professores e as salas (normais e especiais,\npartilhadas e em n\u00famero limitado). Al\u00e9m disso, a escola quer poder\nreagir rapidamente a pequenas altera\u00e7\u00f5es de recursos (um professor\nfica indispon\u00edvel, uma sala avaria, entra uma turma nova) sem ter de\nrecome\u00e7ar o planeamento do zero.</span>\n<span class=\"paragraph\">Este \u00e9 um problema de <strong>satisfa\u00e7\u00e3o e otimiza\u00e7\u00e3o de restri\u00e7\u00f5es</strong>\n(CSP/CP). Cabe-te a ti escolher e justificar a t\u00e9cnica de modela\u00e7\u00e3o\ne as ferramentas \u2014 o enunciado n\u00e3o fornece c\u00f3digo de modela\u00e7\u00e3o nem\nde apresenta\u00e7\u00e3o de resultados.</span>\n<h2 id=\"objetivo\">Objetivo</h2>\n<span class=\"paragraph\">Construir, num ou mais notebooks Marimo, um sistema que:</span>\n<ol>\n<li>importa os dados de entrada de ficheiros (sec\u00e7\u00e3o \"Dados de\n   entrada\"),</li>\n<li>gera um hor\u00e1rio que respeite os <strong>requisitos obrigat\u00f3rios</strong>\n   (sec\u00e7\u00e3o seguinte) e otimize o <strong>objetivo</strong> (buracos),</li>\n<li>seja capaz de, a partir de um hor\u00e1rio j\u00e1 gerado, produzir\n   eficientemente um novo hor\u00e1rio v\u00e1lido quando os recursos mudam\n   ligeiramente (sec\u00e7\u00e3o \"Constru\u00e7\u00e3o incremental\").</li>\n</ol>\n<span class=\"paragraph\">O c\u00f3digo, a escolha de bibliotecas (OR-Tools/CP-SAT \u00e9 a sugest\u00e3o da\ndisciplina, mas podes justificar outra abordagem), a forma de\nimportar os dados e a forma de apresentar os resultados s\u00e3o\ndecis\u00f5es tuas \u2014 ver sec\u00e7\u00e3o \"O que \u00e9 deixado ao teu crit\u00e9rio\".</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vblA",
+      "code_hash": "a5e7a747a8f5d62e13ec83dec8fbad3c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"dados-de-entrada\">Dados de entrada</h2>\n<span class=\"paragraph\">Os dados de exemplo est\u00e3o nos ficheiros CSV em <code>dados/</code>. O teu\nnotebook <strong>n\u00e3o pode ter os dados escritos diretamente no c\u00f3digo</strong>\n(nada de dicion\u00e1rios/listas Python com os valores) \u2014 tem de os ler\ndestes ficheiros, e continuar a funcionar se estes forem\nsubstitu\u00eddos por outro conjunto de dados no mesmo formato (mais\nturmas, mais disciplinas, outros professores, etc.).</span>\n<span class=\"paragraph\"><strong><code>turmas.csv</code></strong> \u2014 uma turma por linha.</span>\n<table>\n<thead>\n<tr>\n<th>turma</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>7\u00baA</td>\n</tr>\n<tr>\n<td>7\u00baB</td>\n</tr>\n</tbody>\n</table>\n<span class=\"paragraph\"><strong><code>disciplinas.csv</code></strong> \u2014 curr\u00edculo. <code>carga_semanal</code> \u00e9 o n\u00famero de\ntempos letivos por semana. <code>duplo_periodo</code> (<code>sim</code>/<code>nao</code>) indica que\na disciplina tem de ser dada em blocos de 2 tempos consecutivos, no\nmesmo dia (ex.: uma disciplina com <code>carga_semanal=4</code> e\n<code>duplo_periodo=sim</code> corresponde a 2 blocos duplos por semana, em\ndias diferentes). <code>sala_especial</code>, quando preenchida, \u00e9 o tipo de\nsala (ver <code>salas.csv</code>) que a disciplina exige; quando vazia, a\ndisciplina usa uma sala normal qualquer.</span>\n<table>\n<thead>\n<tr>\n<th>disciplina</th>\n<th>professor</th>\n<th>carga_semanal</th>\n<th>duplo_periodo</th>\n<th>sala_especial</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>Matem\u00e1tica</td>\n<td>Prof. Ana</td>\n<td>4</td>\n<td>nao</td>\n<td></td>\n</tr>\n<tr>\n<td>Portugu\u00eas</td>\n<td>Prof. Bruno</td>\n<td>4</td>\n<td>nao</td>\n<td></td>\n</tr>\n<tr>\n<td>Ci\u00eancias</td>\n<td>Prof. Carla</td>\n<td>3</td>\n<td>nao</td>\n<td>Laborat\u00f3rio</td>\n</tr>\n<tr>\n<td>Hist\u00f3ria</td>\n<td>Prof. Diana</td>\n<td>2</td>\n<td>nao</td>\n<td></td>\n</tr>\n<tr>\n<td>Ingl\u00eas</td>\n<td>Prof. Diana</td>\n<td>2</td>\n<td>nao</td>\n<td></td>\n</tr>\n<tr>\n<td>Educa\u00e7\u00e3o F\u00edsica</td>\n<td>Prof. Eduardo</td>\n<td>2</td>\n<td>sim</td>\n<td>Gin\u00e1sio</td>\n</tr>\n</tbody>\n</table>\n<span class=\"paragraph\"><strong><code>salas.csv</code></strong> \u2014 tipos de sala dispon\u00edveis e quantas existem em\nsimult\u00e2neo. <code>tipo</code> \u00e9 <code>normal</code> ou <code>especial</code>; para <code>especial</code>, o\nnome da sala liga-se ao <code>sala_especial</code> de <code>disciplinas.csv</code>.</span>\n<table>\n<thead>\n<tr>\n<th>sala</th>\n<th>tipo</th>\n<th>quantidade</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>Sala Normal</td>\n<td>normal</td>\n<td>6</td>\n</tr>\n<tr>\n<td>Laborat\u00f3rio</td>\n<td>especial</td>\n<td>1</td>\n</tr>\n<tr>\n<td>Gin\u00e1sio</td>\n<td>especial</td>\n<td>1</td>\n</tr>\n</tbody>\n</table>\n<span class=\"paragraph\"><strong><code>disponibilidade_excecoes.csv</code></strong> \u2014 por omiss\u00e3o todos os\nprofessores est\u00e3o dispon\u00edveis em todos os tempos da semana (5\ndias \u00d7 5 tempos); este ficheiro lista s\u00f3 as <em>exce\u00e7\u00f5es</em>, isto \u00e9, os\n(professor, dia, per\u00edodo) em que <strong>n\u00e3o</strong> est\u00e3o dispon\u00edveis. <code>dia</code>\nusa <code>Seg</code>/<code>Ter</code>/<code>Qua</code>/<code>Qui</code>/<code>Sex</code>; <code>periodo</code> \u00e9 1 a 5.</span>\n<table>\n<thead>\n<tr>\n<th>professor</th>\n<th>dia</th>\n<th>periodo</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>Prof. Eduardo</td>\n<td>Seg</td>\n<td>1</td>\n</tr>\n<tr>\n<td>Prof. Eduardo</td>\n<td>Seg</td>\n<td>2</td>\n</tr>\n<tr>\n<td>Prof. Eduardo</td>\n<td>Seg</td>\n<td>3</td>\n</tr>\n<tr>\n<td>\u2026</td>\n<td>\u2026</td>\n<td>\u2026</td>\n</tr>\n</tbody>\n</table>\n<span class=\"paragraph\">(o ficheiro completo lista o Prof. Eduardo como indispon\u00edvel nos\nprimeiros 3 tempos de todos os dias \u2014 s\u00f3 d\u00e1 aulas nos \u00faltimos 2\ntempos de cada dia).</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "2ef83c434e2ec3ef4eca34a9c68bac93",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"requisitos-obrigatorios\">Requisitos obrigat\u00f3rios</h2>\n<span class=\"paragraph\">O hor\u00e1rio gerado tem sempre de respeitar:</span>\n<ul>\n<li><strong>R1.</strong> Uma turma n\u00e3o pode ter duas aulas em simult\u00e2neo.</li>\n<li><strong>R2.</strong> Cada disciplina cumpre <em>exatamente</em> a carga semanal\n  definida em <code>disciplinas.csv</code>, para cada turma.</li>\n<li><strong>R3.</strong> No m\u00e1ximo uma aula da mesma disciplina por dia, por\n  turma \u2014 exceto disciplinas de duplo per\u00edodo (ver R4), em que o\n  bloco de 2 tempos conta como uma s\u00f3 ocorr\u00eancia nesse dia.</li>\n<li><strong>R4.</strong> Disciplinas marcadas <code>duplo_periodo=sim</code> s\u00f3 podem ser\n  dadas em blocos de 2 tempos consecutivos, no mesmo dia (nunca um\n  tempo isolado).</li>\n<li><strong>R5.</strong> Um professor n\u00e3o pode dar duas aulas em simult\u00e2neo, mesmo\n  que sejam a turmas ou disciplinas diferentes.</li>\n<li><strong>R6.</strong> Um professor s\u00f3 pode dar aulas nos tempos em que est\u00e1\n  dispon\u00edvel (<code>disponibilidade_excecoes.csv</code>).</li>\n<li><strong>R7.</strong> Cada aula ocupa uma sala. Disciplinas com <code>sala_especial</code>\n  s\u00f3 podem usar salas desse tipo; as restantes usam salas\n  <code>normal</code>. Em nenhum tempo o n\u00famero de aulas a decorrer num tipo\n  de sala pode exceder a <code>quantidade</code> desse tipo definida em\n  <code>salas.csv</code>.</li>\n<li><strong>R8.</strong> Os dados de entrada s\u00e3o sempre lidos dos ficheiros CSV \u2014\n  ver sec\u00e7\u00e3o anterior \u2014 nunca escritos diretamente no c\u00f3digo.</li>\n</ul>\n<h2 id=\"objetivo-a-otimizar\">Objetivo (a otimizar)</h2>\n<ul>\n<li><strong>O1.</strong> Minimizar o n\u00famero total de \"buracos\" no hor\u00e1rio de cada\n  professor \u2014 um buraco \u00e9 um tempo livre, no meio do dia, entre a\n  primeira e a \u00faltima aula desse professor nesse dia.</li>\n</ul>\n<span class=\"paragraph\">N\u00e3o precisas de encontrar sempre a solu\u00e7\u00e3o \u00f3tima de O1 \u2014 ver\ntamb\u00e9m os limites de tempo referidos em \"Constru\u00e7\u00e3o incremental\".</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "lEQa",
+      "code_hash": "439c7888bee50dfbad19b7ab0191d2f9",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"construcao-incremental-r9\">Constru\u00e7\u00e3o incremental (R9)</h2>\n<span class=\"paragraph\">Numa escola real, o hor\u00e1rio raramente \u00e9 gerado do zero: \u00e9 ajustado\ndepois de j\u00e1 existir um, quando algum recurso muda ligeiramente.\nResolver o problema completo outra vez, sempre que isso acontece,\n\u00e9 caro e pode alterar aulas que n\u00e3o precisavam de mudar.</span>\n<ul>\n<li><strong>R9.</strong> O teu notebook tem de suportar o seguinte fluxo:<ol>\n<li>Gerar um hor\u00e1rio v\u00e1lido <code>H0</code> a partir de um conjunto de\n   dados inicial (<code>dados/</code>).</li>\n<li>Dada uma pequena altera\u00e7\u00e3o aos recursos \u2014 por exemplo, a\n   que est\u00e1 em <code>dados_v2/</code> (o Prof. Eduardo continua limitado\n   \u00e0s tardes, mas a Prof. Ana passa a estar indispon\u00edvel \u00e0s\n   sextas-feiras nos 2 \u00faltimos tempos) \u2014 gerar um novo hor\u00e1rio\n   v\u00e1lido <code>H1</code> que respeite R1\u2013R8 com os novos dados.</li>\n<li><code>H1</code> deve ser produzido <strong>de forma eficiente</strong> (mais r\u00e1pido\n   do que resolver <code>H1</code> do zero, sem usar <code>H0</code>) e <strong>minimizando\n   o n\u00famero de aulas que mudam de tempo/sala</strong> entre <code>H0</code> e\n   <code>H1</code> \u2014 <code>H1</code> n\u00e3o precisa de ser \u00f3timo em rela\u00e7\u00e3o a O1.</li>\n</ol>\n</li>\n</ul>\n<span class=\"paragraph\">Tens de justificar e demonstrar a tua abordagem (ex.: reaproveitar\n<code>H0</code> como ponto de partida/<em>hint</em> para o solver, fixar as partes do\nhor\u00e1rio n\u00e3o afetadas pela mudan\u00e7a e resolver s\u00f3 o subproblema das\nturmas/professores/salas afetados, ou outra t\u00e9cnica \u00e0 tua escolha).\nDeves apresentar evid\u00eancia de que a tua constru\u00e7\u00e3o incremental \u00e9 de\nfacto mais r\u00e1pida e/ou muda menos aulas do que resolver <code>H1</code> do\nzero, para os dados fornecidos (ex.: medindo o tempo de execu\u00e7\u00e3o e\no n\u00famero de aulas alteradas nos dois casos).</span>\n<span class=\"paragraph\">Outros tipos de altera\u00e7\u00e3o de recursos que o teu notebook deve\nconseguir tratar da mesma forma (n\u00e3o precisas de ficheiros de dados\npara todos \u2014 basta que o teu c\u00f3digo n\u00e3o assuma que s\u00f3 o cen\u00e1rio de\n<code>dados_v2/</code> pode acontecer):</span>\n<ul>\n<li>um professor deixa de estar dispon\u00edvel nalguns tempos, ou fica\n  dispon\u00edvel em mais tempos;</li>\n<li>uma sala fica temporariamente indispon\u00edvel (ex.: avaria);</li>\n<li>uma turma nova \u00e9 criada a meio do ano;</li>\n<li>um professor \u00e9 substitu\u00eddo por outro, na mesma disciplina.</li>\n</ul></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "PKri",
+      "code_hash": "f0bb8cd92056a9f284d196e9dce089b9",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"o-que-e-deixado-ao-teu-criterio\">O que \u00e9 deixado ao teu crit\u00e9rio</h2>\n<span class=\"paragraph\">O enunciado define <strong>o que</strong> o hor\u00e1rio tem de satisfazer, n\u00e3o\n<strong>como</strong> o deves implementar. Ficam ao teu crit\u00e9rio, desde que\njustificadas no notebook:</span>\n<ul>\n<li>a t\u00e9cnica e biblioteca de modela\u00e7\u00e3o (CP-SAT do OR-Tools \u00e9 a\n  sugest\u00e3o da disciplina, mas \u00e9s livre de escolher outra\n  abordagem de L\u00f3gica Computacional, justificando a escolha);</li>\n<li>a forma de ler e estruturar os dados dos ficheiros CSV (podes\n  usar <code>pandas</code>, <code>csv</code> da biblioteca standard, ou outra forma \u2014\n  justifica a escolha se n\u00e3o usares pandas);</li>\n<li>a forma de representar e apresentar o hor\u00e1rio resultante (podes\n  usar tabelas, texto, gr\u00e1ficos, <code>mo.ui</code> \u2014 o que achares mais\n  claro).</li>\n</ul>\n<h2 id=\"como-testarvalidar\">Como testar/validar</h2>\n<ul>\n<li>Escreve, no teu notebook ou num ficheiro de testes \u00e0 parte, uma\n  verifica\u00e7\u00e3o autom\u00e1tica de que um hor\u00e1rio gerado respeita R1\u2013R8\n  (n\u00e3o precisa de ser exaustiva, mas cobre pelo menos um caso de\n  cada restri\u00e7\u00e3o).</li>\n<li>Corre o fluxo completo da sec\u00e7\u00e3o \"Constru\u00e7\u00e3o incremental\" com os\n  dados fornecidos (<code>dados/</code> \u2192 <code>dados_v2/</code>) e mostra os resultados\n  (tempo de execu\u00e7\u00e3o, n\u00ba de aulas alteradas) diretamente no\n  notebook.</li>\n<li>Testa com pelo menos um conjunto de dados diferente do fornecido\n  (mais uma turma, mais uma disciplina, outra exce\u00e7\u00e3o de\n  disponibilidade) para confirmares que n\u00e3o h\u00e1 nada \"hardcoded\".</li>\n</ul>\n<h2 id=\"entrega\">Entrega</h2>\n<ul>\n<li>Come\u00e7e por criar uma estrutura \"Git\" na directoria local  TP1.1 que vai conter todos os elenetos no trabalho. Se ainda n\u00e3o tiver crie um utilizador GitHub para onde deve enviar (\"push\") os \"commits\" locais. No GitHub  o reposit\u00f3rio deve ser  \"clonable\" ap\u00f3s a data de entrega do trabalho.</li>\n<li>Relat\u00f3rio na forma de um ou mais notebooks Marimo; o notebook principal \"horario_escolar.py\" constr\u00f3i-se editando o notebook anexo.</li>\n<li>Vers\u00e3o PDF do relat\u00f3rio</li>\n</ul>\n<h2 id=\"extensoes-opcionais-bonus\">Extens\u00f5es opcionais (b\u00f3nus)</h2>\n<ul>\n<li><strong>Prefer\u00eancias dos professores</strong>: acrescenta mais termos \u00e0\n  fun\u00e7\u00e3o objetivo (ex.: penalizar aulas \u00e0 primeira hora para quem\n  prefere n\u00e3o ter).</li>\n<li><strong>Escala</strong>: mostra que a tua abordagem (incremental ou n\u00e3o)\n  continua a funcionar com um n\u00famero de turmas/professores bem\n  maior do que o exemplo fornecido, e discute os limites que\n  encontraste.</li>\n</ul></span>"
+          }
+        }
+      ],
+      "console": []
+    }
+  ]
+}
