@@ -7,7 +7,7 @@
   "cells": [
     {
       "id": "setup",
-      "code_hash": "f1ab4803c60ee908f8c0e3366c54bf87",
+      "code_hash": "ded0ed58496d0037c0da255f2aeb1d25",
       "outputs": [
         {
           "type": "data",
@@ -19,24 +19,30 @@
       "console": []
     },
     {
-      "id": "ZyQm",
-      "code_hash": "6dfc05c1b521574a0eb58b74550680b1",
+      "id": "Hbol",
+      "code_hash": "2d8e3df9fe74248cde727b724363c141",
       "outputs": [
         {
-          "type": "data",
-          "data": {
-            "text/plain": ""
-          }
+          "type": "error",
+          "ename": "exception",
+          "evalue": "'Z3Solver' object has no attribute '_content'",
+          "traceback": null
         }
       ],
       "console": [
         {
           "type": "stream",
-          "name": "stdout",
-          "text": "        disciplina      professor  carga_semanal duplo_periodo sala_especial\n0       Matem\u00e1tica      Prof. Ana              4           nao           NaN\n1        Portugu\u00eas    Prof. Bruno              4           nao           NaN\n2         Ci\u00eancias    Prof. Carla              3           nao   Laborat\u00f3rio\n3         Hist\u00f3ria    Prof. Diana              2           nao           NaN\n4           Ingl\u00eas    Prof. Diana              2           nao           NaN\n5  Educa\u00e7\u00e3o F\u00edsica  Prof. Eduardo              2           sim       Gin\u00e1sio\n",
-          "mimetype": "text/plain"
+          "name": "stderr",
+          "text": "<span class=\"codehilite\"><div class=\"highlight\"><pre><span></span><span class=\"gt\">Traceback (most recent call last):</span>\n  File <span class=\"nb\">&quot;/tmp/marimo_11958/__marimo__cell_Hbol_.py&quot;</span>, line <span class=\"m\">31</span>, in <span class=\"n\">&lt;module&gt;</span>\n<span class=\"w\">    </span><span class=\"nb\">print</span><span class=\"p\">(</span><span class=\"n\">is_sat</span><span class=\"p\">(</span><span class=\"n\">s</span><span class=\"p\">))</span>\n  File <span class=\"nb\">&quot;/home/francisco/anaconda3/envs/logica/lib/python3.10/site-packages/pysmt/shortcuts.py&quot;</span>, line <span class=\"m\">996</span>, in <span class=\"n\">is_sat</span>\n<span class=\"w\">    </span><span class=\"k\">if</span> <span class=\"n\">formula</span> <span class=\"ow\">not</span> <span class=\"ow\">in</span> <span class=\"n\">env</span><span class=\"o\">.</span><span class=\"n\">formula_manager</span><span class=\"p\">:</span>\n  File <span class=\"nb\">&quot;/home/francisco/anaconda3/envs/logica/lib/python3.10/site-packages/pysmt/formula.py&quot;</span>, line <span class=\"m\">1119</span>, in <span class=\"n\">__contains__</span>\n<span class=\"w\">    </span><span class=\"k\">if</span> <span class=\"n\">node</span><span class=\"o\">.</span><span class=\"n\">_content</span> <span class=\"ow\">in</span> <span class=\"bp\">self</span><span class=\"o\">.</span><span class=\"n\">formulae</span><span class=\"p\">:</span>\n<span class=\"gr\">AttributeError</span>: <span class=\"n\">&#39;Z3Solver&#39; object has no attribute &#39;_content&#39;</span>\n</pre></div>\n</span>",
+          "mimetype": "application/vnd.marimo+traceback"
         }
       ]
+    },
+    {
+      "id": "MJUe",
+      "code_hash": null,
+      "outputs": [],
+      "console": []
     }
   ]
 }
