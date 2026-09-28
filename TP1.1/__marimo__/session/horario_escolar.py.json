@@ -20,7 +20,7 @@
     },
     {
       "id": "Hbol",
-      "code_hash": "6887d129dc2cf616f72a2310864c7ef0",
+      "code_hash": "a14697db9659fb64cd6bbf7a8b6b5658",
       "outputs": [
         {
           "type": "data",
@@ -33,13 +33,13 @@
         {
           "type": "stream",
           "name": "stdout",
-          "text": "Solu\u00e7\u00e3o encontrada com sucesso!\n\n\n==============================================================================================================\n HOR\u00c1RIO DA TURMA: 7\u00baA\n===========================================================================\nPer\u00edodo   | Seg         | Ter         | Qua         | Qui         | Sex         \n--------------------------------------------------------------------------------\n1         | ---         | Ci\u00eancias    | Portugu\u00eas   | ---         | ---         \n2         | Ingl\u00eas      | ---         | Matem\u00e1tica  | Hist\u00f3ria    | Ci\u00eancias    \n3         | ---         | Matem\u00e1tica  | Ingl\u00eas      | Portugu\u00eas   | Matem\u00e1tica  \n4         | ---         | ---         | Educa\u00e7\u00e3o F\u00ed | ---         | Portugu\u00eas   \n5         | Matem\u00e1tica  | Portugu\u00eas   | Educa\u00e7\u00e3o F\u00ed | Ci\u00eancias    | Hist\u00f3ria    \n\n==============================================================================================================\n HOR\u00c1RIO DA TURMA: 7\u00baB\n===========================================================================\nPer\u00edodo   | Seg         | Ter         | Qua         | Qui         | Sex         \n--------------------------------------------------------------------------------\n1         | ---         | ---         | Ingl\u00eas      | Portugu\u00eas   | Ci\u00eancias    \n2         | Ci\u00eancias    | Matem\u00e1tica  | ---         | ---         | Portugu\u00eas   \n3         | Portugu\u00eas   | ---         | Portugu\u00eas   | ---         | Hist\u00f3ria    \n4         | Educa\u00e7\u00e3o F\u00ed | Ci\u00eancias    | Matem\u00e1tica  | Matem\u00e1tica  | ---         \n5         | Educa\u00e7\u00e3o F\u00ed | Hist\u00f3ria    | ---         | Ingl\u00eas      | Matem\u00e1tica  \n",
+          "text": "Solu\u00e7\u00e3o encontrada com sucesso!\n\n\n==============================================================================================================\n HOR\u00c1RIO DA TURMA: 7\u00baA\n===========================================================================\nPer\u00edodo   | Seg         | Ter         | Qua         | Qui         | Sex         \n--------------------------------------------------------------------------------\n1         | Ingl\u00eas      | ---         | Ci\u00eancias    | Ingl\u00eas      | Portugu\u00eas   \n2         | Hist\u00f3ria    | Matem\u00e1tica  | Matem\u00e1tica  | Ci\u00eancias    | ---         \n3         | ---         | Ci\u00eancias    | ---         | ---         | Hist\u00f3ria    \n4         | Matem\u00e1tica  | ---         | Portugu\u00eas   | Educa\u00e7\u00e3o F\u00ed | Matem\u00e1tica  \n5         | Portugu\u00eas   | Portugu\u00eas   | ---         | Educa\u00e7\u00e3o F\u00ed | ---         \n\n==============================================================================================================\n HOR\u00c1RIO DA TURMA: 7\u00baB\n===========================================================================\nPer\u00edodo   | Seg         | Ter         | Qua         | Qui         | Sex         \n--------------------------------------------------------------------------------\n1         | Portugu\u00eas   | ---         | ---         | Portugu\u00eas   | Matem\u00e1tica  \n2         | Ci\u00eancias    | Ingl\u00eas      | ---         | ---         | ---         \n3         | Matem\u00e1tica  | ---         | Portugu\u00eas   | Matem\u00e1tica  | ---         \n4         | Educa\u00e7\u00e3o F\u00ed | Portugu\u00eas   | Ingl\u00eas      | Hist\u00f3ria    | Hist\u00f3ria    \n5         | Educa\u00e7\u00e3o F\u00ed | Matem\u00e1tica  | ---         | Ci\u00eancias    | Ci\u00eancias    \n",
           "mimetype": "text/plain"
         }
       ]
     },
     {
-      "id": "RLac",
+      "id": "MJUe",
       "code_hash": null,
       "outputs": [],
       "console": []
