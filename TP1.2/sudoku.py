@@ -19,11 +19,14 @@ def _(AllDifferent, And, Equals, GE, INT, Int, LE, Solver, Symbol, random):
     # R1
 
     def print_matriz(n, m):
+        if m is None:
+            print("Sem solução")
+            return 
         for c in range(n*n):
             for d in range(n):
                 print(' ', end='')
                 for e in range(n):
-                    print(m[c][d * n + e], end=' ')
+                    print(m[c][d * n + e], end=' ') if m[c][d * n + e] is not None else print("~", end=' ') 
                 if(d + 1 != n):
                     print('|', end='')
             if (c + 1) % n == 0 and c + 1 < n * n:   
@@ -82,7 +85,7 @@ def _(AllDifferent, And, Equals, GE, INT, Int, LE, Solver, Symbol, random):
             while (i, j) != (i1, j1):
                 i, j = i + di, j + dj
                 self.add(i, j)
-    
+
     # testes e cenas
 
     # cube1 = cube(2, 0, 0)
@@ -100,8 +103,8 @@ def _(AllDifferent, And, Equals, GE, INT, Int, LE, Solver, Symbol, random):
         return b
 
     # cenas
-    b = box_aleatorio(3, 81)
-    print_matriz(b.n, b.to_matrix())
+    # b = box_aleatorio(3, 81)
+    # print_matriz(b.n, b.to_matrix())
 
     # R5
     class model:
@@ -126,17 +129,18 @@ def _(AllDifferent, And, Equals, GE, INT, Int, LE, Solver, Symbol, random):
             return [[self.solver.get_value(self.x[(i, j)]).constant_value()
                      for j in range(self.size)] for i in range(self.size)]
 
-    def regras(n):
+    # R6
+    def criar_sudoku(n):
         s = n * n
-        return ([path(n, (i, 0), (i, s - 1)) for i in range(s)] +
-                [path(n, (0, j), (s - 1, j)) for j in range(s)] +
-                [cube(n, i, j) for i in range(n) for j in range(n)])
+        linhas  = [path(n, (i, 0), (i, s - 1)) for i in range(s)]
+        colunas = [path(n, (0, j), (s - 1, j)) for j in range(s)]
+        blocos  = [cube(n, i, j) for i in range(n) for j in range(n)]
+        return linhas + colunas + blocos + [box_aleatorio(n)]
 
-    m = model(2)
-    m.add_groups(*regras(2))
-    print_matriz(2, m.solve())
-
-
+    N = 3
+    m = model(N)
+    m.add_groups(*criar_sudoku(N))
+    print_matriz(N, m.solve())
     return
 
 
