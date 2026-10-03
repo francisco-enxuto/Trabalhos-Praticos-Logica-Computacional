@@ -16,23 +16,21 @@ def _():
 
 @app.cell
 def _(AllDifferent, And, Equals, GE, INT, Int, LE, Solver, Symbol, random):
-    # R1
-
     def print_matriz(n, m):
-        if m is None:
-            print("Sem solução")
-            return 
+        w = len(str(n*n))
         for c in range(n*n):
             for d in range(n):
                 print(' ', end='')
                 for e in range(n):
-                    print(m[c][d * n + e], end=' ') if m[c][d * n + e] is not None else print("~", end=' ') 
+                    print(f"{m[c][d * n + e]:{w}}", end=' ')
                 if(d + 1 != n):
                     print('|', end='')
             if (c + 1) % n == 0 and c + 1 < n * n:   
-                print('\n' + '_' * (n*n*2 + n*2 - 1))
+                print('\n' + '_' * ((n+1)*n + (n-1) + (n*n*w)))
             else:
                 print()
+
+    # R1
     class box:
  
         def __init__(self, n, cells=None):
@@ -86,12 +84,6 @@ def _(AllDifferent, And, Equals, GE, INT, Int, LE, Solver, Symbol, random):
                 i, j = i + di, j + dj
                 self.add(i, j)
 
-    # testes e cenas
-
-    # cube1 = cube(2, 0, 0)
-    # cube1.add(0,0,1)
-    # print_matrix(cube1.n, cube1.to_matrix())
-
     # R4
 
     def box_aleatorio(n, k=None):
@@ -102,10 +94,6 @@ def _(AllDifferent, And, Equals, GE, INT, Int, LE, Solver, Symbol, random):
             b.add(i, j, random.randint(1,b.size))
         return b
 
-    # cenas
-    # b = box_aleatorio(3, 81)
-    # print_matriz(b.n, b.to_matrix())
-
     # R5
     class model:
         def __init__(self, n):
@@ -115,10 +103,14 @@ def _(AllDifferent, And, Equals, GE, INT, Int, LE, Solver, Symbol, random):
                       for i in range(self.size) for j in range(self.size)}
             for s in self.x.values():
                 self.solver.add_assertion(And(GE(s, Int(1)), LE(s, Int(self.size))))
+            self.box_inicial = None
 
-        def add_groups(self, *boxes):
+        def add_groups(self, boxes):
             for b in boxes:
-                self.solver.add_assertion(AllDifferent([self.x[c] for c in b.cells]))
+                if type(b) != type(box(3)):
+                    self.solver.add_assertion(AllDifferent([self.x[c] for c in b.cells]))
+                else:
+                    self.box_inicial = b
                 for c, val in b.cells.items():
                     if val is not None:
                         self.solver.add_assertion(Equals(self.x[c], Int(val)))
@@ -129,6 +121,12 @@ def _(AllDifferent, And, Equals, GE, INT, Int, LE, Solver, Symbol, random):
             return [[self.solver.get_value(self.x[(i, j)]).constant_value()
                      for j in range(self.size)] for i in range(self.size)]
 
+        def imprime_box_aleatorio(self, N):
+            print("Pista aleatória")
+            print_matriz(N, self.box_inicial.to_matrix())
+            print()
+    
+
     # R6
     def criar_sudoku(n):
         s = n * n
@@ -137,16 +135,49 @@ def _(AllDifferent, And, Equals, GE, INT, Int, LE, Solver, Symbol, random):
         blocos  = [cube(n, i, j) for i in range(n) for j in range(n)]
         return linhas + colunas + blocos + [box_aleatorio(n)]
 
-    N = 3
-    m = model(N)
-    m.add_groups(*criar_sudoku(N))
-    print_matriz(N, m.solve())
+
+    return criar_sudoku, model, print_matriz
+
+
+@app.cell
+def _(d, sudoku, val):
+    # lazy, não diz as coordenadas dos valores repetidos
+    def verificar_sudoku(n, sukodu):
+        size = n*n
+        # verificar linhas e colunas
+        for c in range(size):
+            linhas = []
+            colunas = []
+            linhas.append(sudoku[c][d])
+            colunas.append(sudoku[d][c])
+            for d in range(1, size):
+                # linhas
+                if (c := sudoku[c][d]) in linhas:
+                    print("Valor repetido na linha {c}")
+                linhas.append(val)
+        
+                # colunas
+                if (l := sudoku[d][c]) in colunas:
+                    print("Valor repetido na coluna {c}")
+                colunas.append(val)
+
+
     return
 
 
 @app.cell
-def _():
-    return
+def _(criar_sudoku, model, print_matriz):
+    N = 6
+    m = model(N)
+    m.add_groups(criar_sudoku(N))
+    m.imprime_box_aleatorio(N)
+    sudoku = m.solve()
+    if sudoku is not None:
+        print("Solução")
+        print_matriz(N, sudoku)
+    else:
+        print("Sem solução")
+    return (sudoku,)
 
 
 if __name__ == "__main__":
