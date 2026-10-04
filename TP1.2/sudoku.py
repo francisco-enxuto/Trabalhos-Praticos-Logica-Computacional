@@ -10,12 +10,37 @@ def _():
     from pysmt.shortcuts import Symbol, Solver, And, LE, GE, Int, Equals, AllDifferent
     from pysmt.typing import INT
     import random
+    from ortools.sat.python import cp_model
 
-    return AllDifferent, And, Equals, GE, INT, Int, LE, Solver, Symbol, random
+    return (
+        AllDifferent,
+        And,
+        Equals,
+        GE,
+        INT,
+        Int,
+        LE,
+        Solver,
+        Symbol,
+        cp_model,
+        random,
+    )
 
 
 @app.cell
-def _(AllDifferent, And, Equals, GE, INT, Int, LE, Solver, Symbol, random):
+def _(
+    AllDifferent,
+    And,
+    Equals,
+    GE,
+    INT,
+    Int,
+    LE,
+    Solver,
+    Symbol,
+    cp_model,
+    random,
+):
     def print_matriz(n, m):
         w = len(str(n*n))
         for c in range(n*n):
@@ -96,36 +121,64 @@ def _(AllDifferent, And, Equals, GE, INT, Int, LE, Solver, Symbol, random):
 
     # R5
     class model:
-        def __init__(self, n):
+        def __init__(self, n, solver=""):
             self.size = n * n
-            self.solver = Solver(name="z3")
-            self.x = {(i, j): Symbol(f"x_{i}_{j}", INT)
-                      for i in range(self.size) for j in range(self.size)}
-            for s in self.x.values():
-                self.solver.add_assertion(And(GE(s, Int(1)), LE(s, Int(self.size))))
             self.box_inicial = None
+            self.solver_name = solver
+        
+            if self.solver_name == "z3":
+                self.solver = Solver(name="z3")
+                self.x = {(i, j): Symbol(f"x_{i}_{j}", INT) for i in range(self.size) for j in range(self.size)}
+                for s in self.x.values():
+                    self.solver.add_assertion(And(GE(s, Int(1)), LE(s, Int(self.size))))   
+            else:
+                self.model = cp_model.CpModel()
+                self.solver = cp_model.CpSolver()
+                self.x = {
+                    (i, j): self.model.NewIntVar(1, self.size, f"x_{i}_{j}")
+                    for i in range(self.size)
+                    for j in range(self.size)
+                }
+        
+           
 
         def add_groups(self, boxes):
             for b in boxes:
-                if type(b) != type(box(3)):
-                    self.solver.add_assertion(AllDifferent([self.x[c] for c in b.cells]))
+                if self.solver_name == "z3":
+                    if isinstance(b, (path, cube)):
+                        self.solver.add_assertion(AllDifferent([self.x[c] for c in b.cells]))
+                    else:
+                        self.box_inicial = b
+                    for c, val in b.cells.items():
+                        if val is not None:
+                            self.solver.add_assertion(Equals(self.x[c], Int(val)))
                 else:
-                    self.box_inicial = b
-                for c, val in b.cells.items():
-                    if val is not None:
-                        self.solver.add_assertion(Equals(self.x[c], Int(val)))
+                    if isinstance(b, (path, cube)):
+                        self.model.AddAllDifferent([self.x[c] for c in b.cells])
+                    else:
+                        self.box_inicial = b
+                    for c, val in b.cells.items():
+                        if val is not None:
+                            self.model.Add(self.x[c] == val)
 
         def solve(self):
-            if not self.solver.solve():
-                return None
-            return [[self.solver.get_value(self.x[(i, j)]).constant_value()
-                     for j in range(self.size)] for i in range(self.size)]
+            if self.solver_name == "z3":
+                if not self.solver.solve():
+                    return None
+                return [[self.solver.get_value(self.x[(i, j)]).constant_value()
+                         for j in range(self.size)] for i in range(self.size)]
+            else:
+                status = self.solver.Solve(self.model)
+                if status in (cp_model.OPTIMAL, cp_model.FEASIBLE):
+                    return [[self.solver.Value(self.x[(i,j)]) for j in range(self.size)] for i in range(self.size)]
+                else:
+                    return None
 
         def imprime_box_aleatorio(self, N):
             print("Pista aleatória")
             print_matriz(N, self.box_inicial.to_matrix())
             print()
-    
+
 
     # R6
     def criar_sudoku(n):
@@ -139,35 +192,57 @@ def _(AllDifferent, And, Equals, GE, INT, Int, LE, Solver, Symbol, random):
     return criar_sudoku, model, print_matriz
 
 
-@app.cell
-def _(d, sudoku, val):
-    # lazy, não diz as coordenadas dos valores repetidos
-    def verificar_sudoku(n, sukodu):
-        size = n*n
-        # verificar linhas e colunas
-        for c in range(size):
-            linhas = []
-            colunas = []
-            linhas.append(sudoku[c][d])
-            colunas.append(sudoku[d][c])
-            for d in range(1, size):
-                # linhas
-                if (c := sudoku[c][d]) in linhas:
-                    print("Valor repetido na linha {c}")
-                linhas.append(val)
-        
-                # colunas
-                if (l := sudoku[d][c]) in colunas:
-                    print("Valor repetido na coluna {c}")
-                colunas.append(val)
+@app.function
+def verificar_sudoku(n, sudoku, box):
+    ok = True
+    size = n*n
+    # verificar linhas e colunas
+    for c in range(size):
+        linhas = []
+        colunas = []
+        for d in range(size):
+            # linhas
+            if (co := sudoku[c][d]) in linhas:
+                print(f"Valor {co} repetido na linha {c}")
+                ok = False
+            linhas.append(co)
+    
+            # colunas
+            if (li := sudoku[d][c]) in colunas:
+                print(f"Valor {li} repetido na coluna {c}")
+                ok = False
+            colunas.append(li)
 
+    # cubes
+    for c in range(n):
+        for d in range(n):
+            cube = []
+            for e in range(n):
+                for f in range(n):
+                    if (val := sudoku[e + c*n][f + d*n]) in cube:
+                        print(f"Valor {val} repetido no cube {c*n + d}")
+                        ok = False
+                    cube.append(val)
 
-    return
+    # verificar valores do box inicial
+    for (i,j), val in box.cells.items():
+        if val != (atual := sudoku[i][j]):
+            print(f"Valor inicial {val}  nas coordenadas ({i},{j}) alterado para {atual}")
+            ok = False
+
+    # verificar se os valores do sudoku são válidos
+    for c in range(size):
+        for d in range(size):
+            if not 1 <= (val := sudoku[c][d]) <= size:
+                print(f"Valor {val} inválido em ({c},{d})")
+                ok = False
+                
+    return ok
 
 
 @app.cell
 def _(criar_sudoku, model, print_matriz):
-    N = 6
+    N = 3
     m = model(N)
     m.add_groups(criar_sudoku(N))
     m.imprime_box_aleatorio(N)
@@ -175,9 +250,16 @@ def _(criar_sudoku, model, print_matriz):
     if sudoku is not None:
         print("Solução")
         print_matriz(N, sudoku)
+        if verificar_sudoku(N, sudoku, m.box_inicial):
+            print("Sudoku sem valores repetidos")
     else:
         print("Sem solução")
-    return (sudoku,)
+    return
+
+
+@app.cell
+def _():
+    return
 
 
 if __name__ == "__main__":
