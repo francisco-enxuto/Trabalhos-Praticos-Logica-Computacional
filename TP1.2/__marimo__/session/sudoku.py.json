@@ -6,21 +6,34 @@
   },
   "cells": [
     {
-      "id": "Hbol",
-      "code_hash": "df63ffac2adee1dd870717f6bb869a37",
+      "id": "lVDT",
+      "code_hash": "59ec488d4c61e1050fd1c0c99dec4ad4",
       "outputs": [
         {
           "type": "data",
           "data": {
-            "text/plain": ""
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"sudoku-generico-como-csp\">Sudoku gen\u00e9rico como CSP</h1>\n<h2 id=\"introducao\">Introdu\u00e7\u00e3o</h2>\n<span class=\"paragraph\">O Sudoku cl\u00e1ssico \u00e9 um exemplo can\u00f3nico de <strong>problema de satisfa\u00e7\u00e3o de restri\u00e7\u00f5es\n(CSP)</strong>: uma grelha <marimo-tex class=\"arithmatex\">||(n^2 \\times n^2||)</marimo-tex> onde cada linha, cada coluna e cada bloco\n<marimo-tex class=\"arithmatex\">||(n \\times n||)</marimo-tex> tem de conter os valores de <marimo-tex class=\"arithmatex\">||(1||)</marimo-tex> a <marimo-tex class=\"arithmatex\">||(n^2||)</marimo-tex> sem repeti\u00e7\u00f5es. A regra \u00e9\nsempre a mesma (\"todos diferentes\"); o que muda de grupo para grupo \u00e9 apenas\n<strong>que c\u00e9lulas</strong> o comp\u00f5em.</span>\n<span class=\"paragraph\">Neste trabalho modelamos o problema com uma abstra\u00e7\u00e3o \u00fanica, a classe <code>box</code>, que\nrepresenta um conjunto de c\u00e9lulas, algumas possivelmente fixas a um valor.\nLinhas, colunas e blocos s\u00e3o casos particulares (<code>path</code> e <code>cube</code>), e as pistas\naleat\u00f3rias s\u00e3o, outra vez, uma <code>box</code>. O modelo recebe um n\u00famero arbitr\u00e1rio de\ngrupos e trata-os todos da mesma forma, sem saber de onde vieram.</span>\n<h2 id=\"escolha-do-solver\">Escolha do solver</h2>\n<span class=\"paragraph\">Come\u00e7amos por resolver o problema com o <strong>Z3</strong>, atrav\u00e9s do pySMT, porque foi o\nsolver que aprendemos nas aulas e aquele com que nos sent\u00edamos mais \u00e0 vontade. Mais\ntarde aprendemos a usar o <strong>CP-SAT</strong> do OR-Tools, e adaptamos o c\u00f3digo que j\u00e1 t\u00ednhamos\npara o Z3. Como a classe <code>box</code> e os grupos n\u00e3o dependem do solver (s\u00f3 o modelo\nfala com a biblioteca), a adapta\u00e7\u00e3o limitou-se \u00e0 classe do modelo, e pudemos\ncomparar as duas abordagens.</span></span>"
           }
         }
       ],
       "console": []
     },
     {
-      "id": "MJUe",
-      "code_hash": "dc75d8b30312af9f0928482824775d26",
+      "id": "qLGj",
+      "code_hash": "532dfbe43dcc88685be3099cfd266eb6",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"imports\">Imports</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Hbol",
+      "code_hash": "00be9ef24355f1b65f96a0867d10ec2f",
       "outputs": [
         {
           "type": "data",
@@ -33,7 +46,20 @@
     },
     {
       "id": "vblA",
-      "code_hash": "872dad57e61b2e7f48fc7216bf12b411",
+      "code_hash": "b4b055940581833a367f3f0ea2e3a1ee",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"classes\">Classes</h2>\n<h3 id=\"classe-box-r1\">Classe box (R1)</h3>\n<span class=\"paragraph\">A classe box \u00e9 uma classe gen\u00e9rica que representa um conjunto de c\u00e9lulas de uma grelha n\u00b2 * n\u00b2.\nEsta classe possui os m\u00e9todos:</span>\n<ul>\n<li>add(self, i, j, val=None), que acrescenta um certo valor de 1 a n\u00b2 ou None \u00e0 grelha, dentro das coordenadas (i,j), com i j pertencentes a [0, n\u00b2-1]. Caso as coordenadas ou o valor sejam inv\u00e1lidos, este \u00e9 rejeitado.</li>\n<li>to_matrix(self), que converte o dicion\u00e1rio cells numa matriz n\u00b2 * n\u00b2. Caso o valor com chave (i,j) n\u00e3o existe em cells, \u00e9 colocado um 0 no lugar.</li>\n</ul></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "01e28f5fa199e907e5f6bf71a2143d9f",
       "outputs": [
         {
           "type": "data",
@@ -45,8 +71,229 @@
       "console": []
     },
     {
-      "id": "neMK",
-      "code_hash": "0d1316a1c9b11252377982aae4feadc5",
+      "id": "lEQa",
+      "code_hash": "fc43e2b5f346071bb6e2dd075da89aa8",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"classe-cube-r2\">Classe cube (R2)</h3>\n<span class=\"paragraph\">Um grupo que representa o bloco <marimo-tex class=\"arithmatex\">||(i \\times j||)</marimo-tex> cujo canto superior esquerdo \u00e9 a c\u00e9lula (<marimo-tex class=\"arithmatex\">||(i \\times n, j \\times n||)</marimo-tex>), parametrizado pelos \u00edndices de bloco (i,j) com <marimo-tex class=\"arithmatex\">||(0 \\leq i,j \\lt n||)</marimo-tex>.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "PKri",
+      "code_hash": "79e05981ea81015cb4c67322ccc51405",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Xref",
+      "code_hash": "c9c806dbd5be19b7b4a96d4c5e389244",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"classe-path-r3\">Classe path (R3)</h3>\n<span class=\"paragraph\">Um grupo que representa o tro\u00e7o reto (horizontal ou vertical) de c\u00e9lulas entre duas coordenadas inicio e fim, inclusive. N\u00e3o representa necess\u00e1riamente uma linha ou coluna, podendo apenas representar um segmento mais pequeno.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "SFPL",
+      "code_hash": "6d0c02032fbdc916efe63eb9cb77337b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "BYtC",
+      "code_hash": "d7676c3d5bfa00a75dcb37ef9700c1c7",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"classe-model-r5\">Classe model (R5)</h3>\n<span class=\"paragraph\">Uma classe que aceita dois solvers, z3 e CP-SAT (CP-SAT por defeito).</span>\n<span class=\"paragraph\">Esta classe possui os m\u00e9todos:</span>\n<ul>\n<li>add_groups(self, boxes), que recebe um n\u00famero arbitr\u00e1rio de grupos (box, cube, path, ou pistas aleat\u00f3rias) e, para cada um, imp\u00f5es que as suas c\u00e9lulas sejam todas diferentes e fixa as que tiverem valor atribu\u00eddo, neste problema apenas atribuiremos valores \u00e0s pistas aleat\u00f3rias.</li>\n<li>solve(self), que devolve um sudoku resolvido caso haja solu\u00e7\u00e3o, ou None caso contr\u00e1rio.</li>\n<li>imprime_box_aleatorio(self, N), que imprime a pista aleat\u00f3ria, o ponto de partida para a resolu\u00e7\u00e3o do sudoku.</li>\n</ul></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "RGSE",
+      "code_hash": "2266fbae1f6ac46f752ffe32e88aaf2b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Kclp",
+      "code_hash": "c928e959408c833a2b5eefa6bfdfb2db",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"funcoes\">Fun\u00e7\u00f5es</h2>\n<h3 id=\"geracao-aleatoria-de-pistas-r4\">Gera\u00e7\u00e3o Aleat\u00f3ria de pistas (R4)</h3>\n<h4 id=\"def-box_aleatorion-knone\">def box_aleatorio(n, k=None)</h4>\n<span class=\"paragraph\">Uma fun\u00e7\u00e3o que devolve um grupo box, com k c\u00e9lulas preenchidas ou n, caso k n\u00e3o seja fornecido. Devolve um box completamente aleat\u00f3rio, podendo este ser inv\u00e1lido para a resolu\u00e7\u00e3o do sudoku.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "emfo",
+      "code_hash": "2d8a3a7f9b68adfed2c1fa4650b48d05",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Hstk",
+      "code_hash": "102562d32ab20d3cc4a291a749390d0a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"resolucao-r6\">Resolu\u00e7\u00e3o (R6)</h3>\n<h4 id=\"def-criar_sudokun\">def criar_sudoku(n)</h4>\n<span class=\"paragraph\">Uma fun\u00e7\u00e3o que retorna um grupo de n\u00b2 linhas, n\u00b2 colunas, n\u00b2 de cubes e uma pista aleat\u00f3ria.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "nWHF",
+      "code_hash": "5d419680e579c58a5632ab4565f5f877",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "iLit",
+      "code_hash": "d6addbd5f7567fe1cdda7c83f58f8bfb",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"verificacao\">Verifica\u00e7\u00e3o</h2>\n<h4 id=\"def-verificar_sudokun-sudoku-box\">def verificar_sudoku(n, sudoku, box)</h4>\n<span class=\"paragraph\">Fun\u00e7\u00e3o que verifica se todos os elementos das linhas, colunas e cubes s\u00e3o diferentes e que os elementos da pista aleat\u00f3ria inicial est\u00e3o presentes na matriz, com os valores e coordenas iguais.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ZHCJ",
+      "code_hash": "75e8ff614d89ec137c05ba6116a06585",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ROlb",
+      "code_hash": "06b8b08a4023af3dd54625092d714b6c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h4 id=\"def-print_matrizn-m\">def print_matriz(n, m)</h4>\n<span class=\"paragraph\">Imprime o sudoku n\u00b2 * n\u00b2</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "qnkX",
+      "code_hash": "2ce7baf12b4294a8927e3762788a7a2b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MJUe",
+      "code_hash": "819c6ac1ea82c14e7b2591691457771f",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"uso-de-llm\">Uso de LLM</h2>\n<span class=\"paragraph\">Neste trabalho, usamos o Claude e o ChatGPT como apoio neste trabalho. Em concreto:</span>\n<ul>\n<li>Explica\u00e7\u00e3o de classes e heran\u00e7a em Python, de *args, de listas por compreens\u00e3o e do pySMT.</li>\n<li>Discuss\u00e3o de solvers (CP-SAT, Z3 e SCIP) e escolha do Z3 com o pySMT, por ser o que a UC ensina e do CP-SAT por ser o que a UC recomenda.</li>\n<li>C\u00f3digo: o LLM prop\u00f4s a estrutura inicial das classes box, cube, path e model, e de fun\u00e7\u00f5es auxiliares. O c\u00f3digo foi todo revisado, adaptado para o trabalho e aprovado pelo grupo. A fun\u00e7\u00e3o print_matriz foi feita inteiramente pelo grupo. As restantes fun\u00e7\u00f5es foram adaptadas ao problema.</li>\n<li>Ajuda a perceber erros (por exemplo, o * ao passar a lista de grupos, e a chamada do m\u00e9todo na classe em vez do objeto).</li>\n<li>O Chat-GPT apenas foi usado para explicar as fun\u00e7\u00f5es do CP-SAT.</li>\n<li>Escrita deste relat\u00f3rio.</li>\n</ul>\n<span class=\"paragraph\"><a href=\"https://claude.ai/share/708baf07-7220-4b87-88a9-a7ff149958f4\" rel=\"noopener noreferrer\" target=\"_blank\">link para o chat do claude</a></span>\n<span class=\"paragraph\"><a href=\"https://chatgpt.com/share/6ac37a12-c930-83eb-aaf0-db1e9d3c122d\" rel=\"noopener noreferrer\" target=\"_blank\">link para o chat do Chat-GPT</a></span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "TqIu",
+      "code_hash": "dfb59e0082c200c7fcca59f4ff26c16b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"testes\">Testes</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "NcgN",
+      "code_hash": "cc999cc251912a04bd9e54ff0ae4419f",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"cp-sat-n2\">CP-SAT (n=2)</h3></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Vxnm",
+      "code_hash": "06f019bc8efee18c6d18fa49ec94cc8d",
       "outputs": [
         {
           "type": "data",
@@ -59,15 +306,187 @@
         {
           "type": "stream",
           "name": "stdout",
-          "text": "Pista aleat\u00f3ria\n ~ ~ ~ | 5 ~ ~ | ~ ~ ~ \n ~ ~ ~ | ~ ~ ~ | ~ ~ ~ \n ~ ~ ~ | ~ ~ ~ | ~ 8 ~ \n_______________________\n ~ ~ ~ | ~ ~ ~ | ~ ~ ~ \n ~ ~ ~ | ~ ~ ~ | ~ ~ ~ \n ~ ~ ~ | ~ ~ ~ | ~ ~ ~ \n_______________________\n ~ 6 ~ | ~ ~ ~ | ~ ~ ~ \n ~ ~ ~ | ~ ~ ~ | ~ ~ ~ \n ~ ~ ~ | ~ ~ ~ | ~ ~ ~ \n\nSolu\u00e7\u00e3o\n 3 4 2 | 5 6 8 | 9 1 7 \n 7 8 6 | 9 1 4 | 2 3 5 \n 9 5 1 | 2 3 7 | 4 8 6 \n_______________________\n 2 1 7 | 4 9 3 | 5 6 8 \n 6 9 4 | 8 5 1 | 7 2 3 \n 8 3 5 | 7 2 6 | 1 4 9 \n_______________________\n 5 6 3 | 1 7 2 | 8 9 4 \n 1 7 8 | 6 4 9 | 3 5 2 \n 4 2 9 | 3 8 5 | 6 7 1 \nSudoku sem valores repetidos\n",
+          "text": "Pista aleat\u00f3ria\n 0 0 | 0 0 \n 0 3 | 0 0 \n___________\n 0 0 | 0 0 \n 0 0 | 0 4 \n\nSolu\u00e7\u00e3o\n 4 2 | 1 3 \n 1 3 | 4 2 \n___________\n 3 4 | 2 1 \n 2 1 | 3 4 \nSudoku sem valores repetidos\nTempo de execu\u00e7\u00e3o: 0.0097s\n",
           "mimetype": "text/plain"
         }
       ]
     },
     {
-      "id": "wsmF",
-      "code_hash": null,
-      "outputs": [],
+      "id": "iynP",
+      "code_hash": "df89dd37493ea44020294d3676598c28",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"cp-sat-n3\">CP-SAT (n=3)</h3></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MQcy",
+      "code_hash": "c8e974c944a92fbc68033ca1ecac76d9",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "Pista aleat\u00f3ria\n 0 0 0 | 0 0 0 | 0 0 0 \n 0 0 0 | 0 0 0 | 0 0 0 \n 0 0 0 | 0 0 0 | 0 0 0 \n_______________________\n 0 0 0 | 0 0 0 | 0 0 0 \n 0 0 0 | 0 0 0 | 0 0 4 \n 0 0 0 | 0 0 0 | 0 0 0 \n_______________________\n 0 0 0 | 0 0 0 | 0 0 0 \n 0 0 0 | 0 0 5 | 0 0 0 \n 0 0 0 | 0 4 0 | 0 0 0 \n\nSolu\u00e7\u00e3o\n 1 3 2 | 8 5 7 | 4 6 9 \n 5 7 8 | 4 6 9 | 1 2 3 \n 9 4 6 | 1 2 3 | 7 8 5 \n_______________________\n 4 5 7 | 3 9 8 | 2 1 6 \n 8 1 3 | 6 7 2 | 5 9 4 \n 2 6 9 | 5 1 4 | 8 3 7 \n_______________________\n 3 2 4 | 7 8 6 | 9 5 1 \n 7 9 1 | 2 3 5 | 6 4 8 \n 6 8 5 | 9 4 1 | 3 7 2 \nSudoku sem valores repetidos\nTempo de execu\u00e7\u00e3o: 0.0895s\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "NmHV",
+      "code_hash": "d00fc00f8042acdecdf95a19e56629d5",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"z3-n3\">Z3 (n=3)</h3></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "uqrL",
+      "code_hash": "df498e8c1439d3643bb8138226054015",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "Pista aleat\u00f3ria\n 0 0 0 | 0 0 0 | 0 0 0 \n 0 0 0 | 0 0 0 | 0 0 0 \n 0 0 0 | 0 0 0 | 0 0 0 \n_______________________\n 0 0 0 | 0 0 0 | 0 0 0 \n 0 0 0 | 0 0 0 | 0 0 4 \n 0 0 0 | 0 0 0 | 0 0 0 \n_______________________\n 0 0 0 | 0 0 0 | 0 0 0 \n 0 0 0 | 0 0 5 | 0 0 0 \n 0 0 0 | 0 4 0 | 0 0 0 \n\nSolu\u00e7\u00e3o\n 7 5 3 | 4 6 2 | 9 8 1 \n 6 9 4 | 7 8 1 | 2 5 3 \n 2 8 1 | 3 5 9 | 6 4 7 \n_______________________\n 3 4 6 | 8 2 7 | 1 9 5 \n 5 1 8 | 6 9 3 | 7 2 4 \n 9 7 2 | 5 1 4 | 3 6 8 \n_______________________\n 4 6 7 | 2 3 8 | 5 1 9 \n 8 2 9 | 1 7 5 | 4 3 6 \n 1 3 5 | 9 4 6 | 8 7 2 \nSudoku sem valores repetidos\nTempo de execu\u00e7\u00e3o: 25.1458s\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "CxEG",
+      "code_hash": "5dd7a55c5e069d3b2ffcca7c98567b63",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"cp-sat-n7\">CP-SAT (n=7)</h3></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "yQBA",
+      "code_hash": "8b2174d6f327211b16dbd52d08502b77",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "Pista aleat\u00f3ria\n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  5  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n________________________________________________________________________________________________________________________________________________________________\n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n________________________________________________________________________________________________________________________________________________________________\n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0 11  0  0  0  0 \n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n________________________________________________________________________________________________________________________________________________________________\n  0  0  0  0  0  0  0 |  0  0  0  0  0 41  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n  0  0  0  0  0  0  0 |  0  0  0 34  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n________________________________________________________________________________________________________________________________________________________________\n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  8  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0 48  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n________________________________________________________________________________________________________________________________________________________________\n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n________________________________________________________________________________________________________________________________________________________________\n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0 13  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 |  0  0  0  0  0  0  0 \n\nSolu\u00e7\u00e3o\n 19  3 38  6 39 14  4 | 48 16 30  7 33 29  5 |  1 46 41 42 24 35 31 | 25 21 23 34 49 26 44 | 11 40 43 20 28  2 17 | 10 47 13 36 37 22 27 |  8 18 45 12 15  9 32 \n 16 10 49  9 28 22 44 | 40 38  6  2 45 36 31 | 15 30  5  8 33 11 29 | 18 13 27 39 43  3 17 | 26 32 47 19 42 25 12 | 41  7 20 46 35 24 34 | 23 21 48  4  1 14 37 \n 34 20  1 17 13 15 18 | 49 41 43 22 32 27 11 |  6 14  7  3 40 37 25 |  4 12 45 35 16 38 36 | 31 39 21 29 23 33 46 | 48  5  8 26  9 30  2 | 44 28 42 47 10 19 24 \n  8  2 45 48 32 40 21 | 14 26  1 44 17 46 47 | 20 34 10  4 13 12 36 | 37  5 42 41  6 19 24 | 16 35 15 30 38  9 22 | 28 43 23 33 25 31 18 |  3 49 27 11  7 29 39 \n 29 37  5 31 23 35 47 |  9 18 25 24 42 34 19 | 21 28 39  2 38 17 44 | 40 10 11  8 32 46 33 | 45 41  7  6 48 27 13 | 15 14 49 12  1  3  4 | 43 30 16 36 22 20 26 \n 33 27 12 30  7 41 46 | 28 23  8 35 10 21 15 | 48 26 18 43 49 16 32 | 22 47  1 29 14  9 20 | 44  4 24 34 37  3 36 | 19 17  6 39 42 11 45 | 40  2 38 13 31  5 25 \n 42 43 36 24 26 11 25 | 13 12  3  4 37 20 39 | 23  9 22 47 19 27 45 |  7 28  2 30 48 15 31 |  1 49  8 10 14  5 18 | 29 38 44 32 40 16 21 | 46 35  6 33 41 34 17 \n________________________________________________________________________________________________________________________________________________________________\n 46 15 17  2 16 39 12 | 21 13 41 29 38  4 49 | 27 25  9 44 32 20 48 | 14 33 22  3 31 30 18 |  8  5 28 42 47 45 10 |  7  6 34 37 19 40 35 | 24 23 43  1 26 11 36 \n 23 31 33 43 44  1 36 | 45 46 48 28 11 37  9 | 14 21 38 17 34  2  8 |  6 16 15 20 10 13 25 | 40 22 32 26 19 35 24 | 12 41 30  5  3 49 42 | 18  7  4 39 29 27 47 \n 28 13 37  7 27 38 30 | 26  3 19 39 47 32 25 | 33  1 40 49 42 31 10 | 34 41 12  5 29 43  8 |  9 21 23 48 46 36 44 | 24  2 22  4 18 45 11 | 17 16 15  6 14 35 20 \n 45 48 18 47 34  4 40 |  6 31 20 43 24 14 35 | 26  7 28 11  5 30 19 | 38 46 44 37 36  2 32 | 33  1  3 15 49 41 27 | 23 39 17 16 29  9 13 | 12 42  8 25 21 10 22 \n 14 24 26 19  9 32  6 |  5 33 15 42  8 10 17 | 36 39 47 35 23 22 18 | 21 27  4 49 45 40 28 |  2 29 16  7 34 12 11 | 20 46  1 25 48 44 43 | 30 31 41 37 13 38  3 \n 49 21 41 35  5 20  3 |  7  1 27 36 22 44 18 | 46 12 37  6 15 29 16 | 39 11 17 24 47 23 42 | 13 43 30 38 31  4 25 | 32 10 26  8 28 33 14 | 19 48 40  2  9 45 34 \n 22 11  8 25 29 42 10 | 12 34 40 30  2 16 23 | 41  4 45 13  3 43 24 | 48 26  9 19  7 35  1 | 37 17 18 14  6 20 39 | 31 36 27 21 47 15 38 |  5 44 28 32 49 33 46 \n________________________________________________________________________________________________________________________________________________________________\n 27 26 31 45 33 21 41 | 34 40  9 37 14 39 13 | 17 24 19 30  7 46  6 | 28  2  8 12 25  5 48 |  3 42 36 49 16 15 47 | 44 35 43 11 20 18 23 | 10  1 32 29 38 22  4 \n 30  4 40 12 15  5 11 | 42 17 31 32 49 24 16 | 38 48 29 27 20 18 47 | 13 45 36  9  3 44 22 | 41 46 39 23 21 26 19 | 33  8 37 28 34  1 10 |  7 25 35 43  6  2 14 \n 25 19 43 20 42 10 28 | 47 22 35  5 18  2  4 | 34 40 32 15  9 36 14 | 23 49 38  1 26 24 21 | 29  7 48 33 44 17 30 | 16  3 39 41 12 13  6 | 45 27 11 31 37 46  8 \n 13 47  6 36 46  8  2 | 29 27 26 25 21 28 43 |  3 23 49 37 10 42  1 | 15 34  7 33 30 14 41 |  4 18 11 35 12 38 40 | 45 22  5 31 32 19 48 |  9 39 24 16 20 17 44 \n 18 14 35 38  1 49 39 | 23  6  7 15 36 48 44 |  4 13 31 41 22  8 43 | 11 20 19 16 27 29 46 | 32 24 10 45  5 37 34 |  2  9 25 30 21 17 47 | 26 33 12  3 40 28 42 \n 48 34 32 37 17 29 16 | 19 30 12 10  1 45  3 | 25 33 44 26 28  5 11 | 43 35 40 42 39 31  6 | 27  2 22  9  8 13 20 | 14 24  7 38 49  4 46 | 36 15 23 21 18 47 41 \n  3  9 23 44 22  7 24 | 33 20 11 38 41  8 46 | 39  2 21 12 16 45 35 | 47 17 32 10  4 18 37 | 14 31  6 25  1 28 43 | 27 29 36 40 15 42 26 | 34 19 13 48 30 49  5 \n________________________________________________________________________________________________________________________________________________________________\n 39 17 24 27  8 44 43 | 25 29 28 26 23 41 40 | 31  6 42 36 35  3  2 | 32 37 21 11  9 16  5 | 18 47  1 13  7 49 33 | 22 45 14 20 30 12 15 | 48 46 34 38 19  4 10 \n 20 41 11  3 47 28 31 | 17 49 37 19 35 33  7 |  5 32 46 10 45  1 38 | 24 18 29 26 34 12 13 | 42 15 44 22 30 16 21 |  9 25  4  6  8 48 39 | 14 36  2 40 43 23 27 \n  1 25 19 46 18 30  7 |  2  4 10 34  5 13  8 | 29 43 11 21 14  9 20 | 44 48 47 36 28 22 23 | 38 45 12 24  3  6 35 | 17 26 41 27 33 37 40 | 49 32 31 42 16 39 15 \n  9 32 16 22 45 23 33 |  1 36 18 20  6 11 30 |  8 47  4  7 37 44 49 | 42 15 46 14  2 41 40 | 48 25 29 39 27 43 28 | 13 19 31 10 38 34  5 | 35 24 17 26  3 21 12 \n  4 42 10 40 12 34 49 | 22 24 46 16 44 43 45 | 18 15 25 48 27 19 39 |  8  6 30 31 38 17  7 | 23 20 26 32 36 14  9 | 21  1 11 35  2 28  3 | 29 37 47  5 33 41 13 \n 38  5  2 26  6 48 15 | 39 42 14 21 12 31 32 | 30 41 16 28 17 33 13 | 27 19 35 43 20  4  3 | 46 10 34 40 11  8 37 | 47 23 18 49 24 29 36 | 22  9 25 45 44  7  1 \n 35 29 13 21 37 36 14 |  3 47 38  9 48 15 27 | 12 22 24 23 26 40 34 |  1 25 39 45 33 49 10 | 17 19  5  4  2 31 41 | 42 16 32 43 44 46  7 | 28  8 20 18 11  6 30 \n________________________________________________________________________________________________________________________________________________________________\n  7 46 47 42 48 43  9 | 24 39 44 33 40 12 10 | 13 45 14 38 36  4 41 | 31 32 49 23 35  6 30 | 34 16 19 21 18  1 26 |  3 37 15 17  5  8 28 | 20 22 29 27  2 25 11 \n 11 40 15 10 38 45 37 | 46 32 17 48 27  3 41 | 35 49  8 19 30 28  9 | 33 39 16 13 44  1 29 | 12 36 20  5 22  7  4 | 43 31  2 24 26  6 25 | 21 34 18 14 47 42 23 \n 26 28 30 34 24 33 35 | 37  9 45  6 29 25 38 | 40  3 48 32 39 23 46 | 19  4 43 21 11 36  2 | 49 14 17 31 10 47  8 | 18 27 42 44 41 20 22 |  1 12  7 15  5 13 16 \n 31 36 27 23  2 25 32 | 43 21 13  1 28  5 34 |  7 11 26 33 18  6 17 | 20  8 41 47 22 45 12 | 24 44 37 46 15 40 42 | 38 49 48 29 14 35 16 | 39 10 19 30  4  3  9 \n 21 16 20 13 41 18 22 | 15 19  2 14 31 49 36 | 44 27 43 24  1 34  5 | 46 40 10 38 42  7  9 | 30 23 33  3 25 29 48 | 39 11 47 45  4 32 12 |  6 26 37 17 28  8 35 \n 17  6 44 14 49 12 29 |  4  7 22  8 26 23 42 |  2 16 15 20 47 25 21 |  5  3 28 48 18 37 34 | 43  9 27 11 35 39 45 |  1 30 46 19 13 10 33 | 31 40 36 41 24 32 38 \n  5 39  4  8  3 19  1 | 35 11 16 47 30 18 20 | 37 42 12 29 31 10 22 | 17 14 24 25 15 27 26 | 28  6 13  2 41 32 38 | 40 34 21  7 23 36  9 | 33 43 46 49 45 44 48 \n________________________________________________________________________________________________________________________________________________________________\n 36  1 22 41 21 46 48 | 30 10 39 13  7 42 37 | 43 38 20 40 12 26 33 |  9 44 34  4 17 32 47 |  6 27  2  8 45 24 15 | 11 18 35  3 31  5 19 | 25 29 14 28 23 16 49 \n 44 30  7 28 43 26 23 | 16  8 29 18 25 40 21 | 32  5  3 39 41 48 42 |  2 36 31 27 37 20 38 | 22 34 35 47  9 10  1 |  4 12 45 13 46 14 49 | 15 11 33 19 17 24  6 \n 40 45  9 49  4  2  5 | 20 43 32 41 15 17  6 | 19 10 13  1 11 21 27 | 16 30 18 22  8 39 14 | 25 12 38 36 33 48  3 | 26 28 24 34  7 23 29 | 42 47 44 35 46 37 31 \n  6 12 29 15 10  3 13 | 44 28 24 49 19 47  1 | 45 18 34 16  8 14  4 | 26 23 33 46  5 42 35 |  7 37 31 41 43 11 32 | 25 21  9 48 17 27 20 |  2 38 39 22 36 30 40 \n 37 18 42 39 14 17 20 | 27  5 34 46  3 22 33 | 47 44 35 31 25 15 28 | 45 24 48 40 12 11 19 | 21 26 49 16 29 30 23 |  6 32 10  2 36 38 41 | 13  4  1  9  8 43  7 \n 32  8 34 33 19 31 27 | 38 14 36 11  4 35 48 |  9 17  6 22  2 24 23 | 10 29 13  7 21 25 49 | 39 28 46 44 40 42  5 | 30 15 16  1 43 47 37 | 41  3 26 20 12 18 45 \n 24 35 25 16 11 47 38 | 31 45 23 12  9 26  2 | 49 36 30 46 29  7 37 | 41 43  3  6  1 28 15 | 19 13  4 17 20 18 14 |  8 40 33 42 22 39 44 | 27  5 10 34 32 48 21 \n________________________________________________________________________________________________________________________________________________________________\n 47 22 39  1 25 13 34 | 18  2  4 17 20  7 26 | 10 37 36 45 46 41 12 | 49 38 14 15 24 48 43 |  5  8  9 28 32 19 29 | 35 42  3 23 11 21 31 | 16  6 30 44 27 40 33 \n 43 38 21 18 20 37 26 | 41 25 33  3 16  6 28 | 42  8  2  9 48 32 40 | 35 22  5 44 23 47 27 | 36 11 14  1 24 46 31 | 34 13 19 15 45  7 30 |  4 17 49 10 39 12 29 \n 15 44 28  4 31  6 42 | 11 35  5 27 43 38 24 | 22 29 23 18 21 49  7 | 12  9 20 17 19  8 45 | 10 30 25 37 26 34 16 | 36 33 40 14 39 41 32 | 47 13  3 46 48  1  2 \n 12 23 46 11 35 16 17 | 32 37 42 31 34 30 22 | 28 20 33 14 43 13 15 | 36  1  6 18 40 21 39 | 47  3 45 27  4 44  7 | 49 48 29  9 10  2  8 | 38 41  5 24 25 26 19 \n 41 33 14 29 30 24 45 | 36 15 21 23 13  1 12 | 16 19 27 34 44 38 26 |  3  7 37  2 46 10 11 | 35 48 40 43 39 22 49 |  5  4 28 47  6 25 17 | 32 20  9  8 42 31 18 \n 10  7 48 32 40 27 19 |  8 44 49 45 39  9 29 | 11 31  1  5  6 47  3 | 30 42 25 28 13 34  4 | 15 33 41 12 17 21  2 | 46 20 38 18 16 26 24 | 37 14 22 23 35 36 43 \n  2 49  3  5 36  9  8 | 10 48 47 40 46 19 14 | 24 35 17 25  4 39 30 | 29 31 26 32 41 33 16 | 20 38 42 18 13 23  6 | 37 44 12 22 27 43  1 | 11 45 21  7 34 15 28 \nSudoku sem valores repetidos\nTempo de execu\u00e7\u00e3o: 27.6841s\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "XKCv",
+      "code_hash": "a25c0ee30b89fb2aea6c316827f682da",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"adicionar-valores-invalidos\">Adicionar valores inv\u00e1lidos</h3></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "rqHn",
+      "code_hash": "92e28166398157352dd5c56933428d11",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "Valor 10 fora de [1, 4]",
+          "traceback": null
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stderr",
+          "text": "<span class=\"codehilite\"><div class=\"highlight\"><pre><span></span><span class=\"gt\">Traceback (most recent call last):</span>\n  File <span class=\"nb\">&quot;/tmp/marimo_12504/__marimo__cell_rqHn_.py&quot;</span>, line <span class=\"m\">6</span>, in <span class=\"n\">&lt;module&gt;</span>\n<span class=\"w\">    </span><span class=\"n\">_</span><span class=\"p\">()</span>\n  File <span class=\"nb\">&quot;/tmp/marimo_12504/__marimo__cell_rqHn_.py&quot;</span>, line <span class=\"m\">3</span>, in <span class=\"n\">_cell_rqHn_</span>\n<span class=\"w\">    </span><span class=\"n\">b</span><span class=\"o\">.</span><span class=\"n\">add</span><span class=\"p\">(</span><span class=\"mi\">0</span><span class=\"p\">,</span><span class=\"mi\">0</span><span class=\"p\">,</span><span class=\"mi\">10</span><span class=\"p\">)</span>\n  File <span class=\"nb\">&quot;/tmp/marimo_12504/__marimo__cell_bkHC_.py&quot;</span>, line <span class=\"m\">15</span>, in <span class=\"n\">add</span>\n<span class=\"w\">    </span><span class=\"k\">raise</span> <span class=\"ne\">ValueError</span><span class=\"p\">(</span><span class=\"sa\">f</span><span class=\"s2\">&quot;Valor </span><span class=\"si\">{</span><span class=\"n\">val</span><span class=\"si\">}</span><span class=\"s2\"> fora de [1, </span><span class=\"si\">{</span><span class=\"bp\">self</span><span class=\"o\">.</span><span class=\"n\">size</span><span class=\"si\">}</span><span class=\"s2\">]&quot;</span><span class=\"p\">)</span>\n<span class=\"gr\">ValueError</span>: <span class=\"n\">Valor 10 fora de [1, 4]</span>\n</pre></div>\n</span>",
+          "mimetype": "application/vnd.marimo+traceback"
+        }
+      ]
+    },
+    {
+      "id": "VHeZ",
+      "code_hash": "9de7b3f1d5858e87bd564d3d0fd853d8",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"adicionar-valores-fora-do-sudoku\">Adicionar valores fora do sudoku</h3></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "GtnO",
+      "code_hash": "116d108d6fb784ef3bf50534d5a3e254",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "C\u00e9lula (-1, -1) fora da grelha 4x4",
+          "traceback": null
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stderr",
+          "text": "<span class=\"codehilite\"><div class=\"highlight\"><pre><span></span><span class=\"gt\">Traceback (most recent call last):</span>\n  File <span class=\"nb\">&quot;/tmp/marimo_12504/__marimo__cell_GtnO_.py&quot;</span>, line <span class=\"m\">5</span>, in <span class=\"n\">&lt;module&gt;</span>\n<span class=\"w\">    </span><span class=\"n\">_</span><span class=\"p\">()</span>\n  File <span class=\"nb\">&quot;/tmp/marimo_12504/__marimo__cell_GtnO_.py&quot;</span>, line <span class=\"m\">3</span>, in <span class=\"n\">_cell_GtnO_</span>\n<span class=\"w\">    </span><span class=\"n\">b</span><span class=\"o\">.</span><span class=\"n\">add</span><span class=\"p\">(</span><span class=\"o\">-</span><span class=\"mi\">1</span><span class=\"p\">,</span><span class=\"o\">-</span><span class=\"mi\">1</span><span class=\"p\">,</span><span class=\"mi\">1</span><span class=\"p\">)</span>\n  File <span class=\"nb\">&quot;/tmp/marimo_12504/__marimo__cell_bkHC_.py&quot;</span>, line <span class=\"m\">13</span>, in <span class=\"n\">add</span>\n<span class=\"w\">    </span><span class=\"k\">raise</span> <span class=\"ne\">ValueError</span><span class=\"p\">(</span><span class=\"sa\">f</span><span class=\"s2\">&quot;C\u00e9lula (</span><span class=\"si\">{</span><span class=\"n\">i</span><span class=\"si\">}</span><span class=\"s2\">, </span><span class=\"si\">{</span><span class=\"n\">j</span><span class=\"si\">}</span><span class=\"s2\">) fora da grelha </span><span class=\"si\">{</span><span class=\"bp\">self</span><span class=\"o\">.</span><span class=\"n\">size</span><span class=\"si\">}</span><span class=\"s2\">x</span><span class=\"si\">{</span><span class=\"bp\">self</span><span class=\"o\">.</span><span class=\"n\">size</span><span class=\"si\">}</span><span class=\"s2\">&quot;</span><span class=\"p\">)</span>\n<span class=\"gr\">ValueError</span>: <span class=\"n\">C\u00e9lula (-1, -1) fora da grelha 4x4</span>\n</pre></div>\n</span>",
+          "mimetype": "application/vnd.marimo+traceback"
+        }
+      ]
+    },
+    {
+      "id": "Pjty",
+      "code_hash": "d9118b51fa568feedee86d2f246691d6",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"conclusao\">Conclus\u00e3o</h2>\n<span class=\"paragraph\">Modelamos o Sudoku <marimo-tex class=\"arithmatex\">||(n^2 \\times n^2||)</marimo-tex> como um CSP, com uma abstra\u00e7\u00e3o \u00fanica (<code>box</code>)\na partir da qual linhas, colunas, blocos e pistas aleat\u00f3rias s\u00e3o tratados da\nmesma forma pelo modelo. Como s\u00f3 a classe do modelo depende do solver, foi\nposs\u00edvel resolver o problema com o <strong>Z3</strong> e com o <strong>CP-SAT</strong>, alterando apenas\nessa classe.</span>\n<span class=\"paragraph\">O fluxo completo (pistas aleat\u00f3rias, montagem dos grupos, resolu\u00e7\u00e3o e\nvalida\u00e7\u00e3o) funcionou para <marimo-tex class=\"arithmatex\">||(n=1||)</marimo-tex> at\u00e9 <marimo-tex class=\"arithmatex\">||(n=7||)</marimo-tex>.\nQuando as pistas aleat\u00f3rias n\u00e3o t\u00eam solu\u00e7\u00e3o, simplesmente dizemos que n\u00e3o tem solu\u00e7\u00e3o.</span>\n<span class=\"paragraph\">Quanto ao desempenho, CP-SAT foi consideravelmente muito mais r\u00e1pido que o Z3.</span></span>"
+          }
+        }
+      ],
       "console": []
     }
   ]
